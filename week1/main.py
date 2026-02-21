@@ -11,12 +11,13 @@ KEY CONCEPTS DEMONSTRATED:
    even without quantization.
 
 CLI INSTRUCTION
-hf jobs uv run main.py `
-    --flavor a10g-small `
-    --timeout 3h `
-    -e COMET_PROJECT_NAME="finetuning-sessions-week1" `
-    -s COMET_API_KEY="" `
-    -s HF_TOKEN=""
+hf jobs uv run \
+  --flavor a10g-small \
+  --timeout 3h \
+  -s COMET_API_KEY="YOUR_COMET_API_TOKEN" \
+  -s HF_TOKEN="YOUR_HF_TOKEN" \
+  -e COMET_PROJECT_NAME="finetuning-sessions-week1" \
+  main.py
 """
 
 import comet_ml
