@@ -89,7 +89,7 @@ def main(
     # --------------------------------------------------------------------------
     log.info(f"Loading Domain Dataset: {dataset_name}...")
     
-    # Using the first 500 examples for this demo job to finish quickly.
+    # Using the first 10000 examples for this demo job to finish quickly.
     # In production, you would use the full 'train' split.
     dataset = load_dataset(dataset_name, split=f"train[:10000]")
     
