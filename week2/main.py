@@ -68,7 +68,7 @@ root.addHandler(handler)
 
 def main(
     # --- MODEL PARAMETERS ---
-    model_name: str = "Qwen/Qwen3-0.6B", 
+    model_name: str = "Qwen/Qwen3-0.6B",
     # Qwen3-0.6B is excellent for demos: fast, capable, and fits in small VRAM.
     
     # --- DATASET PARAMETERS ---
