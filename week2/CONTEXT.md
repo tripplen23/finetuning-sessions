@@ -12,24 +12,22 @@ Week 2 tập trung vào **Supervised Fine-Tuning (SFT)** - giai đoạn dạy mo
 
 ```mermaid
 graph TB
-    subgraph "Pretraining"
-        PT1[Raw Text Stream] --> PT2[Predict Next Token]
-        PT2 --> PT3[Loss on ALL tokens]
-        PT3 --> PT4[Learn Language Patterns]
+    subgraph pt["🧠 Pretraining"]
+        PT1(["Raw Text Stream"]):::ptnode --> PT2["Predict Next Token"]:::ptnode
+        PT2 --> PT3["Loss on ALL tokens"]:::ptnode --> PT4(["Learn Language<br/>Patterns ✅"]):::ptout
     end
-    
-    subgraph "Supervised Fine-Tuning"
-        SFT1[Structured Q&A] --> SFT2[Map Input → Output]
-        SFT2 --> SFT3[Loss on Assistant ONLY]
-        SFT3 --> SFT4[Learn Behavior]
+
+    subgraph sft["🎓 Supervised Fine-Tuning"]
+        SFT1(["Structured Q&A"]):::sftnode --> SFT2["Map Input → Output"]:::sftnode
+        SFT2 --> SFT3["Loss on<br/>Assistant ONLY"]:::sftnode --> SFT4(["Learn Behavior ✅"]):::sftout
     end
-    
-    PT4 -.foundation.-> SFT1
-    
-    style PT1 fill:#e1f5ff
-    style PT4 fill:#e1f5ff
-    style SFT1 fill:#fff4e1
-    style SFT4 fill:#fff4e1
+
+    PT4 -. "foundation" .-> SFT1
+
+    classDef ptnode  fill:#0EA5E9,stroke:#0369A1,color:#fff
+    classDef ptout   fill:#0369A1,stroke:#0C4A6E,color:#fff
+    classDef sftnode fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef sftout  fill:#B45309,stroke:#78350F,color:#fff
 ```
 
 ### Pretraining: Learning Language
@@ -58,26 +56,26 @@ graph TB
 
 ```mermaid
 graph LR
-    A[Python Dict] --> B[Chat Template]
-    B --> C[Tokenized String]
-    C --> D[Model Input]
-    
-    subgraph "Python Format"
-        A1["role: 'user'<br/>content: 'Hello'"]
-        A2["role: 'assistant'<br/>content: 'Hi!'"]
+    A(["Python Dict"]):::node --> B["Chat Template<br/>(Jinja2)"]:::template
+    B --> C["Tokenized String"]:::node --> D(["Model Input"]):::node
+
+    subgraph pyformat["Python Format"]
+        A1["role: 'user'<br/>content: 'Hello'"]:::user
+        A2["role: 'assistant'<br/>content: 'Hi!'"]:::asst
     end
-    
-    subgraph "Flattened Format"
-        C1["&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;<br/>Hello&lt;|eot_id|&gt;<br/>&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;<br/>Hi!&lt;|eot_id|&gt;"]
+
+    subgraph flat["Flattened String"]
+        C1["&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;<br/>Hello&lt;|eot_id|&gt;<br/>&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;<br/>Hi!&lt;|eot_id|&gt;"]:::flat
     end
-    
-    A1 --> B
-    A2 --> B
+
+    A1 & A2 --> B
     B --> C1
-    
-    style A1 fill:#e3f2fd
-    style A2 fill:#fff3e0
-    style C1 fill:#f3e5f5
+
+    classDef node     fill:#1E293B,stroke:#475569,color:#94A3B8
+    classDef template fill:#8B5CF6,stroke:#5B21B6,color:#fff
+    classDef user     fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    classDef asst     fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef flat     fill:#334155,stroke:#475569,color:#94A3B8
 ```
 
 ### Vấn đề cơ bản
@@ -317,28 +315,25 @@ print(tokenizer.special_tokens_map)
 
 ```mermaid
 graph TD
-    subgraph "CPT: Loss on Everything"
-        CPT1[Token 1] --> CPT_L1[Loss ✓]
-        CPT2[Token 2] --> CPT_L2[Loss ✓]
-        CPT3[Token 3] --> CPT_L3[Loss ✓]
-        CPT4[Token 4] --> CPT_L4[Loss ✓]
+    subgraph cpt["📚 CPT — Loss on Everything"]
+        CPT1(["Token 1"]):::tok --> CPT_L1(["Loss ✅"]):::yes
+        CPT2(["Token 2"]):::tok --> CPT_L2(["Loss ✅"]):::yes
+        CPT3(["Token 3"]):::tok --> CPT_L3(["Loss ✅"]):::yes
+        CPT4(["Token 4"]):::tok --> CPT_L4(["Loss ✅"]):::yes
     end
-    
-    subgraph "SFT: Masked Loss"
-        SFT1[User Token 1] --> SFT_L1[Loss ✗ -100]
-        SFT2[User Token 2] --> SFT_L2[Loss ✗ -100]
-        SFT3[Assistant Token 1] --> SFT_L3[Loss ✓]
-        SFT4[Assistant Token 2] --> SFT_L4[Loss ✓]
+
+    subgraph sft["🎓 SFT — Masked Loss"]
+        SFT1(["User Token 1"]):::user --> SFT_L1(["Masked ✗ -100"]):::no
+        SFT2(["User Token 2"]):::user --> SFT_L2(["Masked ✗ -100"]):::no
+        SFT3(["Asst Token 1"]):::asst --> SFT_L3(["Loss ✅"]):::yes
+        SFT4(["Asst Token 2"]):::asst --> SFT_L4(["Loss ✅"]):::yes
     end
-    
-    style CPT_L1 fill:#4caf50
-    style CPT_L2 fill:#4caf50
-    style CPT_L3 fill:#4caf50
-    style CPT_L4 fill:#4caf50
-    style SFT_L1 fill:#f44336
-    style SFT_L2 fill:#f44336
-    style SFT_L3 fill:#4caf50
-    style SFT_L4 fill:#4caf50
+
+    classDef tok  fill:#475569,stroke:#1E293B,color:#fff
+    classDef user fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    classDef asst fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef yes  fill:#10B981,stroke:#065F46,color:#fff
+    classDef no   fill:#EF4444,stroke:#991B1B,color:#fff
 ```
 
 ### CPT: Loss on Everything
@@ -376,29 +371,32 @@ loss = CrossEntropyLoss()(logits, labels)
 
 ```mermaid
 graph TB
-    subgraph "CPT Packing - Efficient"
-        CPT1["Doc A (300 tokens)"] --> CPT_PACK["Packed Sequence (1024 tokens)"]
-        CPT2["Doc B (400 tokens)"] --> CPT_PACK
-        CPT3["Doc C (324 tokens)"] --> CPT_PACK
-        CPT_PACK --> CPT_OK[✓ Maximize GPU]
+    subgraph cptpack["✅ CPT Packing — Efficient"]
+        CPT1(["Doc A (300 tok)"]):::doc --> CPT_PACK["Packed Sequence<br/>1024 tokens"]:::pack
+        CPT2(["Doc B (400 tok)"]):::doc --> CPT_PACK
+        CPT3(["Doc C (324 tok)"]):::doc --> CPT_PACK
+        CPT_PACK --> CPT_OK(["✅ Max GPU util"]):::good
     end
-    
-    subgraph "SFT Standard Packing - Dangerous"
-        SFT1["Conv A end"] --> SFT_PACK["Packed Sequence"]
-        SFT2["Conv B start"] --> SFT_PACK
-        SFT_PACK --> SFT_BAD[✗ Cross-contamination]
+
+    subgraph sftbad["❌ SFT Standard Packing — Dangerous"]
+        SFT1(["Conv A end"]):::danger --> SFT_PACK["Packed Sequence"]:::packbad
+        SFT2(["Conv B start"]):::danger --> SFT_PACK
+        SFT_PACK --> SFT_BAD(["❌ Cross-contamination"]):::bad
     end
-    
-    subgraph "SFT Padding-Free - Safe"
-        PF1["Conv A (512)"] --> PF_BATCH["Varlen Batch"]
-        PF2["Conv B (1024)"] --> PF_BATCH
-        PF3["Conv C (800)"] --> PF_BATCH
-        PF_BATCH --> PF_OK[✓ Hard Firewall]
+
+    subgraph sftgood["✅ SFT Padding-Free — Safe"]
+        PF1(["Conv A (512)"]):::doc --> PF_BATCH["Varlen Batch<br/>cu_seqlens"]:::pack
+        PF2(["Conv B (1024)"]):::doc --> PF_BATCH
+        PF3(["Conv C (800)"]):::doc --> PF_BATCH
+        PF_BATCH --> PF_OK(["✅ Hard Firewall"]):::good
     end
-    
-    style CPT_OK fill:#4caf50
-    style SFT_BAD fill:#f44336
-    style PF_OK fill:#4caf50
+
+    classDef doc     fill:#475569,stroke:#1E293B,color:#fff
+    classDef danger  fill:#7F1D1D,stroke:#991B1B,color:#fca5a5
+    classDef pack    fill:#0EA5E9,stroke:#0369A1,color:#fff
+    classDef packbad fill:#EF4444,stroke:#991B1B,color:#fff
+    classDef good    fill:#10B981,stroke:#065F46,color:#fff
+    classDef bad     fill:#EF4444,stroke:#991B1B,color:#fff
 ```
 
 ### CPT Packing (Good)
@@ -462,24 +460,22 @@ Instead of scraping:
 
 ```mermaid
 graph LR
-    subgraph "Traditional SFT"
-        T1[Question A] --> T2[Answer C]
-        T2 -.shortcut.-> T3[May Hallucinate]
+    subgraph trad["❌ Traditional SFT"]
+        T1(["Question A"]):::bad --> T2(["Answer C"]):::bad
+        T2 -. "shortcut" .-> T3(["May Hallucinate 💀"]):::danger
     end
-    
-    subgraph "Reasoning SFT"
-        R1[Question A] --> R2[Reasoning B]
-        R2 --> R3[Answer C]
-        R3 -.reliable.-> R4[More Accurate]
+
+    subgraph reason["✅ Reasoning SFT"]
+        R1(["Question A"]):::good --> R2(["Reasoning B<br/>🧠 think step"]):::think
+        R2 --> R3(["Answer C"]):::good
+        R3 -. "reliable" .-> R4(["More Accurate ✅"]):::great
     end
-    
-    style T1 fill:#ffcdd2
-    style T2 fill:#ffcdd2
-    style T3 fill:#f44336
-    style R1 fill:#c8e6c9
-    style R2 fill:#81c784
-    style R3 fill:#4caf50
-    style R4 fill:#2e7d32
+
+    classDef bad    fill:#EF4444,stroke:#991B1B,color:#fff
+    classDef danger fill:#7F1D1D,stroke:#991B1B,color:#fca5a5
+    classDef good   fill:#10B981,stroke:#065F46,color:#fff
+    classDef think  fill:#8B5CF6,stroke:#5B21B6,color:#fff
+    classDef great  fill:#065F46,stroke:#022C22,color:#6EE7B7
 ```
 
 ### Traditional SFT
@@ -661,20 +657,21 @@ SFTTrainer(
 
 ```mermaid
 graph TD
-    A[Raw Model] --> B[CPT: Encyclopedia]
-    B --> C[SFT: Persona]
-    C --> D[RL: Alignment]
-    
-    B -.knowledge.-> E[Facts & Patterns]
-    C -.behavior.-> F[Structure & Response]
-    D -.preferences.-> G[HHH: Helpful, Honest, Harmless]
-    
-    style B fill:#e1f5ff
-    style C fill:#fff4e1
-    style D fill:#ffe1e1
-    style E fill:#e1f5ff
-    style F fill:#fff4e1
-    style G fill:#ffe1e1
+    A(["🤖 Raw Model"]):::raw
+    B["📚 CPT<br/>Encyclopedia"]:::cpt
+    C["🎓 SFT<br/>Persona"]:::sft
+    D["⚖️ RL<br/>Alignment"]:::rl
+
+    A --> B --> C --> D
+
+    B -. "knowledge" .-> E(["Facts & Patterns"]):::cpt
+    C -. "behavior" .-> F(["Structure & Response"]):::sft
+    D -. "preferences" .-> G(["Helpful · Honest · Harmless"]):::rl
+
+    classDef raw fill:#475569,stroke:#1E293B,color:#fff
+    classDef cpt fill:#0EA5E9,stroke:#0369A1,color:#fff
+    classDef sft fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef rl  fill:#EF4444,stroke:#991B1B,color:#fff
 ```
 
 ### "Instruct Models" vs "Reasoning Models"

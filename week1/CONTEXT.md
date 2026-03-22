@@ -10,19 +10,24 @@ Week 1 giới thiệu nền tảng về kiến trúc Transformer và quy trình 
 
 ```mermaid
 graph LR
-    A[Raw Text] --> B[Pretraining]
-    B --> C[Base Model]
-    C --> D[Continued Pretraining]
-    D --> E[Domain-Adapted Model]
-    E --> F[Supervised Fine-Tuning]
-    F --> G[Instruction Model]
-    G --> H[RLHF/Alignment]
-    H --> I[Production Model]
-    
-    style B fill:#e1f5ff
-    style D fill:#e1f5ff
-    style F fill:#fff4e1
-    style H fill:#ffe1e1
+    A(["📄 Raw Text"]):::data
+    B["🧠 Pretraining"]:::pretrain
+    C(["🤖 Base Model"]):::model
+    D["🔬 Continued<br/>Pretraining"]:::pretrain
+    E(["🎯 Domain-Adapted<br/>Model"]):::model
+    F["🎓 Supervised<br/>Fine-Tuning"]:::sft
+    G(["💬 Instruction<br/>Model"]):::model
+    H["⚖️ RLHF / Alignment"]:::rl
+    I(["🚀 Production<br/>Model"]):::prod
+
+    A --> B --> C --> D --> E --> F --> G --> H --> I
+
+    classDef data     fill:#475569,stroke:#1E293B,color:#fff
+    classDef pretrain fill:#0EA5E9,stroke:#0369A1,color:#fff
+    classDef model    fill:#1E293B,stroke:#475569,color:#94A3B8
+    classDef sft      fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef rl       fill:#EF4444,stroke:#991B1B,color:#fff
+    classDef prod     fill:#10B981,stroke:#065F46,color:#fff
 ```
 
 ### Lịch sử Attention Mechanism
@@ -44,34 +49,25 @@ Attention so sánh query với tất cả keys, gán weight cho mỗi key, và t
 
 ```mermaid
 graph TD
-    subgraph "Input Sequence"
-        T1[The]
-        T2[cat]
-        T3[sat]
-        T4[on]
-        T5[the]
-        T6[mat]
+    subgraph seq["Input: The cat sat on the mat"]
+        T1(["The"]):::token
+        T2(["cat"]):::focus
+        T3(["sat"]):::query
+        T4(["on"]):::token
+        T5(["the"]):::token
+        T6(["mat"]):::focus
     end
-    
-    subgraph "Self-Attention Process"
-        T3 --> Q[Query: sat]
-        T1 --> K1[Key: The]
-        T2 --> K2[Key: cat]
-        T3 --> K3[Key: sat]
-        T4 --> K4[Key: on]
-        T5 --> K5[Key: the]
-        T6 --> K6[Key: mat]
-        
-        Q -.strong.-> K2
-        Q -.medium.-> K6
-        Q -.weak.-> K1
-        Q -.weak.-> K5
-    end
-    
-    style T3 fill:#ffeb3b
-    style Q fill:#ffeb3b
-    style K2 fill:#4caf50
-    style K6 fill:#8bc34a
+
+    T3 -- "🔍 Query" --> Q["Query: sat"]:::qnode
+    Q -- "strong ✅" --> T2
+    Q -- "medium ✅" --> T6
+    Q -- "weak ➖" --> T1
+    Q -- "weak ➖" --> T5
+
+    classDef token fill:#334155,stroke:#475569,color:#94A3B8
+    classDef focus fill:#10B981,stroke:#065F46,color:#fff
+    classDef query fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef qnode fill:#F59E0B,stroke:#B45309,color:#fff
 ```
 
 Mỗi token trong sequence attend to tất cả tokens khác trong cùng sequence:
@@ -121,36 +117,33 @@ Attention không có khái niệm về thứ tự → cần inject positional in
 
 ```mermaid
 graph TB
-    subgraph "Encoder-Only (BERT)"
-        E1[Token 1] <--> E2[Token 2]
-        E2 <--> E3[Token 3]
+    subgraph enc["🔵 Encoder-Only (BERT)"]
+        direction LR
+        E1(["T1"]):::enc <--> E2(["T2"]):::enc
+        E2 <--> E3(["T3"]):::enc
         E3 <--> E1
-        E1 --> O1[Classification]
-        E2 --> O1
-        E3 --> O1
+        E1 & E2 & E3 --> O1["Classification"]:::out
     end
-    
-    subgraph "Encoder-Decoder (T5)"
-        ED1[Input Tokens] --> ENC[Encoder]
-        ENC --> DEC[Decoder]
-        DEC --> ED2[Output Tokens]
-        DEC -.cross-attention.-> ENC
+
+    subgraph encdec["🟡 Encoder-Decoder (T5)"]
+        direction LR
+        ED1["Input Tokens"]:::encdec --> ENC["Encoder"]:::encdec
+        ENC --> DEC["Decoder"]:::encdec
+        DEC -- "cross-attention" --> ENC
+        DEC --> ED2["Output Tokens"]:::out
     end
-    
-    subgraph "Decoder-Only (GPT)"
-        D1[Token 1] --> D2[Token 2]
-        D2 --> D3[Token 3]
-        D3 --> D4[Token 4]
-        D4 -.predict.-> D5[Next Token]
+
+    subgraph dec["🟢 Decoder-Only (GPT / LLaMA)"]
+        direction LR
+        D1(["T1"]):::decn --> D2(["T2"]):::decn --> D3(["T3"]):::decn --> D4(["T4"]):::decn
+        D4 -. "predict" .-> D5(["Next Token"]):::pred
     end
-    
-    style E1 fill:#e3f2fd
-    style E2 fill:#e3f2fd
-    style E3 fill:#e3f2fd
-    style D1 fill:#fff3e0
-    style D2 fill:#fff3e0
-    style D3 fill:#fff3e0
-    style D4 fill:#fff3e0
+
+    classDef enc    fill:#3B82F6,stroke:#1D4ED8,color:#fff
+    classDef encdec fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef decn   fill:#10B981,stroke:#065F46,color:#fff
+    classDef pred   fill:#8B5CF6,stroke:#5B21B6,color:#fff
+    classDef out    fill:#1E293B,stroke:#475569,color:#94A3B8
 ```
 
 ### Encoder-Only (BERT)
@@ -220,22 +213,26 @@ Performance cải thiện theo power-law khi tăng:
 
 ```mermaid
 graph LR
-    subgraph "CPT - Buffet Approach"
-        CPT1[Raw Text] --> CPT2[Loss on ALL tokens]
-        CPT2 --> CPT3[Packing: Fill context]
-        CPT3 --> CPT4[Domain Knowledge]
+    subgraph cpt["📚 CPT — Buffet Approach"]
+        CPT1(["Raw Text"]):::cptnode
+        CPT2["Loss on<br/>ALL tokens"]:::cptnode
+        CPT3["Packing:<br/>Fill context"]:::cptnode
+        CPT4(["Domain<br/>Knowledge ✅"]):::cptout
+        CPT1 --> CPT2 --> CPT3 --> CPT4
     end
-    
-    subgraph "SFT - Multi-course Meal"
-        SFT1[Q&A Pairs] --> SFT2[Loss on Assistant only]
-        SFT2 --> SFT3[Padding-free batching]
-        SFT3 --> SFT4[Behavior & Structure]
+
+    subgraph sft["🎓 SFT — Multi-course Meal"]
+        SFT1(["Q&A Pairs"]):::sftnode
+        SFT2["Loss on<br/>Assistant only"]:::sftnode
+        SFT3["Padding-free<br/>batching"]:::sftnode
+        SFT4(["Behavior &<br/>Structure ✅"]):::sftout
+        SFT1 --> SFT2 --> SFT3 --> SFT4
     end
-    
-    style CPT1 fill:#e1f5ff
-    style CPT4 fill:#e1f5ff
-    style SFT1 fill:#fff4e1
-    style SFT4 fill:#fff4e1
+
+    classDef cptnode fill:#0EA5E9,stroke:#0369A1,color:#fff
+    classDef cptout  fill:#0369A1,stroke:#0C4A6E,color:#fff
+    classDef sftnode fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef sftout  fill:#B45309,stroke:#78350F,color:#fff
 ```
 
 ### Khi nào dùng CPT?
@@ -262,23 +259,23 @@ graph LR
 
 ```mermaid
 graph TD
-    A[Start Training] --> B[Phase 1: Gold Standard Data]
-    B --> C[Wikipedia, Textbooks]
-    C --> D[Phase 2: Medium Quality]
-    D --> E[News, Articles]
-    E --> F[Phase 3: Long Tail]
-    F --> G[Reddit, Web Crawls]
-    
-    A2[Context: 512 tokens] --> B2[Context: 2048 tokens]
-    B2 --> C2[Context: 8192 tokens]
-    C2 --> D2[Context: 32k-128k tokens]
-    
-    style B fill:#4caf50
-    style C fill:#4caf50
-    style D fill:#8bc34a
-    style E fill:#8bc34a
-    style F fill:#ffc107
-    style G fill:#ffc107
+    A(["🚀 Start Training"]):::node
+    B["Phase 1:<br/>Gold Standard Data"]:::gold
+    C(["Wikipedia, Textbooks"]):::gold
+    D["Phase 2:<br/>Medium Quality"]:::med
+    E(["News, Articles"]):::med
+    F["Phase 3:<br/>Long Tail"]:::tail
+    G(["Reddit, Web Crawls"]):::tail
+
+    A --> B --> C --> D --> E --> F --> G
+
+    A2(["ctx: 512 tokens"]):::ctx --> B2(["ctx: 2048"]):::ctx --> C2(["ctx: 8192"]):::ctx --> D2(["ctx: 32k–128k"]):::ctx
+
+    classDef node fill:#1E293B,stroke:#475569,color:#94A3B8
+    classDef gold fill:#10B981,stroke:#065F46,color:#fff
+    classDef med  fill:#F59E0B,stroke:#B45309,color:#fff
+    classDef tail fill:#EF4444,stroke:#991B1B,color:#fff
+    classDef ctx  fill:#8B5CF6,stroke:#5B21B6,color:#fff
 ```
 
 Organize data by quality/complexity:
@@ -310,19 +307,19 @@ Transfer intelligence từ large "teacher" model sang small "student":
 ### Memory Breakdown Visualization
 
 ```mermaid
-pie title "GPU Memory Usage (Full Precision)"
-    "Model Weights" : 1.2
-    "Gradients" : 1.2
-    "Optimizer States" : 2.4
+pie title GPU Memory — Full Precision
     "Activations" : 8.0
+    "Optimizer States" : 2.4
+    "Gradients" : 1.2
+    "Model Weights" : 1.2
 ```
 
 ```mermaid
-pie title "GPU Memory Usage (8-bit Optimizer)"
-    "Model Weights" : 1.2
-    "Gradients" : 1.2
-    "Optimizer States" : 0.6
+pie title GPU Memory — 8-bit Optimizer
     "Activations" : 8.0
+    "Gradients" : 1.2
+    "Model Weights" : 1.2
+    "Optimizer States (8-bit)" : 0.6
 ```
 
 ### Memory Wall
