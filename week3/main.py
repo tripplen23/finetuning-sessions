@@ -37,13 +37,7 @@ KEY CONCEPTS DEMONSTRATED:
    and efficiently manage LoRA adapters.
 
 CLI INSTRUCTION
-hf jobs uv run main.py `
-    --flavor a10g-small `
-    --timeout 3h `
-    --max_steps 200 `
-    -e COMET_PROJECT_NAME="finetuning-sessions-lab3" `
-    -s COMET_API_KEY="XXXXXX" `
-    -s HF_TOKEN="XXXXXX"
+hf jobs uv run main.py --flavor a10g-small --timeout 3h --max_steps 200 -e COMET_PROJECT_NAME="finetuning-sessions-lab3" -s COMET_API_KEY="[api_key]" -s HF_TOKEN="[hf_token]"
 """
 
 import sys
