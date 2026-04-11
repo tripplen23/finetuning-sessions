@@ -1,2 +1,10 @@
 .venv
 .env
+
+# Hugging Face skills repo (cloned by setup script, not tracked)
+skills/
+
+# OpenCode skill symlinks (created by setup script)
+.opencode/skills/*/
+!.opencode/skills/.gitkeep
+!.opencode/skills/AGENTS.md
