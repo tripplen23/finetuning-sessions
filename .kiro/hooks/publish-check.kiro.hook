@@ -1,0 +1,18 @@
+{
+  "enabled": true,
+  "name": "Publish Check on Skill Change",
+  "description": "Runs the publish pipeline check when SKILL.md files, generate scripts, or config files are modified to ensure generated artifacts stay in sync.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "skills/skills/*/SKILL.md",
+      "skills/scripts/generate_ide_configs.py",
+      "skills/gemini-extension.json"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "cd skills && uv run scripts/generate_ide_configs.py --check"
+  }
+}

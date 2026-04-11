@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Property Tests After Task",
+  "description": "Runs property-based tests after spec tasks complete to verify correctness properties are maintained.",
+  "version": "1",
+  "when": {
+    "type": "postTaskExecution"
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "cd skills && uv run --with hypothesis --with pytest pytest tests/test_kiro_properties.py -v --tb=short"
+  }
+}
