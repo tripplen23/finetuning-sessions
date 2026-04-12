@@ -20,7 +20,7 @@ Moreover, full finetuning carries the risk of **catastrophic forgetting**: gradi
 The Problem with Full Finetuning:
 ┌─────────────────────────────────────────┐
 │  Memory cost = params + grads + opt     │
-│  70B model ≈ 140GB (fp16) + ~560GB opt │
+│  70B model ≈ 140GB (fp16) + ~560GB opt  │
 │                                         │
 │  Catastrophic forgetting on narrow data │
 └─────────────────────────────────────────┘
